@@ -1,3 +1,4 @@
+from unittest import result
 import discord
 from discord.ext import commands
 from pandas import options
@@ -14,6 +15,7 @@ from dotenv import load_dotenv
 import random
 
 bot = commands.Bot(command_prefix='!')
+client = discord.Client()
 
 load_dotenv()
 token = os.getenv("TOKEN")
@@ -23,7 +25,10 @@ user = []       #유저가 입력한 노래 정보
 musictitle = [] #가공된 노래의 정보 제목
 song_queue = [] #가공된 정보의 노래 링크 큐
 musicnow = []   #현재 출력중인 노래
-
+userF = []      #유저 정보 저장 배열
+userFlist = []  #유저 개인 노래 저장 배열
+allplaylist = []    #플레이리스트 배열
+number = 1
 
 def title(msg):
     global music
@@ -83,7 +88,9 @@ def play_next(ctx):
             del musictitle[0]
             del song_queue[0]
             vc.play(discord.FFmpegPCMAudio(URL,**FFMPEG_OPTIONS), after=lambda e: play_next(ctx))
-
+    else:
+        if not vc.is_playing():
+            client.loop.create_task(vc.disconnect())
 
 
 
@@ -96,6 +103,32 @@ async def on_ready():
     print('connection was succesful')
     await bot.change_presence(status=discord.Status.online, activity=discord.Game("이병 슈퍼봇 근무"))
 
+#봇 event 함수들 =================================================================
+
+@bot.command()
+async def 명령어(ctx):
+    await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!들어와 -> 뮤직봇을 자신이 속한 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 채널에서 내보냅니다.
+\n!URL재생 [노래링크] -> 유튜브URL를 입력하면 뮤직봇이 노래를 틀어줍니다.
+(목록재생에서는 사용할 수 없습니다.)
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다.
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!멜론차트 -> 최신 멜론차트를 재생합니다.
+\n!즐겨찾기 -> 자신의 즐겨찾기 리스트를 보여줍니다.
+!즐겨찾기추가 [노래이름] -> 뮤직봇이 노래를 검색해 즐겨찾기에 추가합니다.
+!즐겨찾기삭제 [숫자] ->자신의 즐겨찾기에서 숫자에 해당하는 노래를 지웁니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!대기열추가 [노래] -> 노래를 대기열에 추가합니다.
+!대기열삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x00ff00))
+
+#봇 event 함수들 =================================================================
 
 @bot.command()
 async def 야(ctx):
@@ -130,6 +163,13 @@ async def 나가(ctx):
 
 @bot.command()
 async def 재생(ctx, *, msg):
+    try:
+        global vc
+        vc = await ctx.message.author.voice.channel.connect()
+        await ctx.send("이병 슈퍼봇! 부르셨습니까!")
+    except:
+        await vc.mode_to(ctx.message.author.voice.channel)
+
     if not vc.is_playing():
 
         options = webdriver.ChromeOptions()
@@ -161,7 +201,14 @@ async def 재생(ctx, *, msg):
         await ctx.send(embed = discord.Embed(title= "노래 재생", description = "현재 " + musicnow[0] + "을(를) 재생하고 있습니다.", color = 0x00ff00))
         vc.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx))
     else:
-        await ctx.send("이미 노래가 재생 중이라 노래를 재생할 수 없어요!")
+        user.append(msg)
+        result, URLTEST = title(msg)
+        song_queue.append(URLTEST)
+        await ctx.send(embed = discord.Embed(title = "재생목록 추가", description = result + "를 재생목록에 추가했어요!", color = 0x00ff00))
+
+
+
+
 
 @bot.command()
 async def 일시정지(ctx):
@@ -265,6 +312,122 @@ async def 목록재생(ctx):
             play(ctx)
         else:
             await ctx.send("노래가 이미 재생되고 있어요!")
+
+
+@bot.command()
+async def 즐겨찾기(ctx):
+    global Ftext
+    Ftext = ""
+    correct = 0
+    global Flist
+    for i in range(len(userF)):
+        if userF[i] == str(ctx.message.author.name): #userF에 유저정보가 있는지 확인
+            correct = 1 #있으면 넘김
+    if correct == 0:
+        userF.append(str(ctx.message.author.name)) #userF에다가 유저정보를 저장
+        userFlist.append([]) #유저 노래 정보 첫번째에 유저이름을 저장하는 리스트를 만듬.
+        userFlist[len(userFlist)-1].append(str(ctx.message.author.name))
+        
+    for i in range(len(userFlist)):
+        if userFlist[i][0] == str(ctx.message.author.name):
+            if len(userFlist[i]) >= 2: # 노래가 있다면
+                for j in range(1, len(userFlist[i])):
+                    Ftext = Ftext + "\n" + str(j) + ". " + str(userFlist[i][j])
+                titlename = str(ctx.message.author.name) + "님의 즐겨찾기"
+                embed = discord.Embed(title = titlename, description = Ftext.strip(), color = 0x00ff00)
+                embed.add_field(name = "목록에 추가\U0001F4E5", value = "즐겨찾기에 모든 곡들을 목록에 추가합니다.", inline = False)
+                embed.add_field(name = "플레이리스트로 추가\U0001F4DD", value = "즐겨찾기에 모든 곡들을 새로운 플레이리스트로 저장합니다.", inline = False)
+                Flist = await ctx.send(embed = embed)
+                await Flist.add_reaction("\U0001F4E5")
+                await Flist.add_reaction("\U0001F4DD")
+            else:
+                await ctx.send("아직 등록하신 즐겨찾기가 없어요.")
+
+
+
+@bot.command()
+async def 즐겨찾기추가(ctx, *, msg):
+    correct = 0
+    for i in range(len(userF)):
+        if userF[i] == str(ctx.message.author.name): #userF에 유저정보가 있는지 확인
+            correct = 1 #있으면 넘김
+    if correct == 0:
+        userF.append(str(ctx.message.author.name)) #userF에다가 유저정보를 저장
+        userFlist.append([]) #유저 노래 정보 첫번째에 유저이름을 저장하는 리스트를 만듦.
+        userFlist[len(userFlist)-1].append(str(ctx.message.author.name))
+
+    for i in range(len(userFlist)):
+        if userFlist[i][0] == str(ctx.message.author.name):
+            
+            options = webdriver.ChromeOptions()
+            options.add_argument("headless")
+
+            chromedriver_dir = link
+            driver = webdriver.Chrome(chromedriver_dir, options = options)
+            driver.get("https://www.youtube.com/results?search_query="+msg+"+lyrics")
+            source = driver.page_source
+            bs = bs4.BeautifulSoup(source, 'lxml')
+            entire = bs.find_all('a', {'id': 'video-title'})
+            entireNum = entire[0]
+            music = entireNum.text.strip()
+
+            driver.quit()
+
+            userFlist[i].append(music)
+            await ctx.send(music + "(이)가 정상적으로 등록되었어요!")
+
+
+
+@bot.command()
+async def 즐겨찾기삭제(ctx, *, number):
+    correct = 0
+    for i in range(len(userF)):
+        if userF[i] == str(ctx.message.author.name): #userF에 유저정보가 있는지 확인
+            correct = 1 #있으면 넘김
+    if correct == 0:
+        userF.append(str(ctx.message.author.name)) #userF에다가 유저정보를 저장
+        userFlist.append([]) #유저 노래 정보 첫번째에 유저이름을 저장하는 리스트를 만듦.
+        userFlist[len(userFlist)-1].append(str(ctx.message.author.name))
+
+    for i in range(len(userFlist)):
+        if userFlist[i][0] == str(ctx.message.author.name):
+            if len(userFlist[i]) >= 2: # 노래가 있다면
+                try:
+                    del userFlist[i][int(number)]
+                    await ctx.send("정상적으로 삭제되었습니다.")
+                except:
+                     await ctx.send("입력한 숫자가 잘못되었거나 즐겨찾기의 범위를 초과하였습니다.")
+            else:
+                await ctx.send("즐겨찾기에 노래가 없어서 지울 수 없어요!")
+
+@bot.event
+async def on_reaction_add(reaction, users):
+    if users.bot == 1:
+        pass
+    else:
+        try:
+            await Flist.delete()
+        except:
+            pass
+        else:
+            if str(reaction.emoji) == '\U0001F4E5':
+                await reaction.message.channel.send("잠시만 기다려주세요. (즐겨찾기 갯수가 많으면 지연될 수 있습니다.)")
+                print(users.name)
+                for i in range(len(userFlist)):
+                    if userFlist[i][0] == str(users.name):
+                        for j in range(1, len(userFlist[i])):
+                            try:
+                                driver.close()
+                            except:
+                                print("NOT CLOSED")
+
+                            user.append(userFlist[i][j])
+                            result, URLTEST = title(userFlist[i][j])
+                            song_queue.append(URLTEST)
+                            await reaction.message.channel.send(userFlist[i][j] + "를 재생목록에 추가했어요!")
+            elif str(reaction.emoji) == '\U0001F4DD':
+                await reaction.message.channel.send("플레이리스트가 나오면 생길 기능이랍니다. 추후에 올릴 영상을 기다려주세요!")
+
 
 
 # 장난감=============================================================================================
