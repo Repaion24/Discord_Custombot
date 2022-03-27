@@ -110,8 +110,9 @@ async def on_ready():
 async def 도움말(ctx):
     await ctx.send(embed = discord.Embed(title='도움말',description="""
 \n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
-\n!야 -> 뮤직봇을 자신이 속한 채널로 부릅니다.
-\n!나가 -> 뮤직봇을 자신이 속한 채널에서 내보냅니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
 \n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
 \n!노래끄기 -> 현재 재생중인 노래를 끕니다.
 !일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
@@ -128,40 +129,115 @@ async def 도움말(ctx):
 @bot.command()
 async def 야(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
         global vc
         if(random.random() > 0.2):
             vc = await ctx.message.author.voice.channel.connect()
-            await ctx.send("이병 슈퍼봇! 부르셨습니까!")
+            await ctx.message.channel.purge(limit=100)
+            await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
+            await ctx.send(embed = discord.Embed(title= "호출", description = "이병 슈퍼봇! 부르셨습니까!", color = 0x536349))
         else:
-            await ctx.send("응~안가~")
+            await ctx.send(embed = discord.Embed(title= "폐급", description = "응 안가 ~ ", color = 0x536349))
     except:
         try:
             await vc.mode_to(ctx.message.author.voice.channel)
         except:
-            await ctx.send("Error")
+            await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
+    
 
 
 @bot.command()
 async def 나가(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
         if(random.random() > 0.2):
             await vc.disconnect()
-            await ctx.send("이병 슈퍼봇! 편히 쉬십쇼~")
+            await ctx.message.channel.purge(limit=100)
+            await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
+            await ctx.send(embed = discord.Embed(title= "퇴장", description = "이병 슈퍼봇! 편히 쉬십쇼~", color = 0x536349))
         else:
-            await ctx.send("응~안가~")
+            await ctx.send(embed = discord.Embed(title= "폐급", description = "응 안가 ~ ", color = 0x536349))
     except:
         try:
             await vc.disconnect()
         except:
-            await ctx.send("Error")
+            await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
 
+@bot.command()
+async def 청소(ctx, *, msg):
+    try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=int(msg))
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
+        await ctx.send(embed = discord.Embed(title= "청소", description = "메세지를 " + msg + "개 만큼 삭제했습니다.", color = 0x536349))
+    except:
+        await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
 
 @bot.command()
 async def 재생(ctx, *, msg):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         global vc
         vc = await ctx.message.author.voice.channel.connect()
-        await ctx.send("이병 슈퍼봇! 부르셨습니까!")
+        await ctx.send(embed = discord.Embed(title= "호출", description = "이병 슈퍼봇! 부르셨습니까!", color = 0x536349))
     except:
         try:
             await vc.mode_to(ctx.message.author.voice.channel)
@@ -214,6 +290,23 @@ async def 재생(ctx, *, msg):
 
 @bot.command()
 async def 일시정지(ctx):
+    await ctx.message.channel.purge(limit=1)
+    await ctx.message.channel.purge(limit=100)
+    await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
     if vc.is_playing():
         vc.pause()
         await ctx.send(embed = discord.Embed(title= "일시정지", description = musicnow[0] + "을(를) 일시정지 했습니다.", color = 0x536349))
@@ -222,6 +315,23 @@ async def 일시정지(ctx):
 
 @bot.command()
 async def 다시재생(ctx):
+    await ctx.message.channel.purge(limit=1)
+    await ctx.message.channel.purge(limit=100)
+    await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
     try:
         vc.resume()
     except:
@@ -231,6 +341,23 @@ async def 다시재생(ctx):
 
 @bot.command()
 async def 노래끄기(ctx):
+    await ctx.message.channel.purge(limit=1)
+    await ctx.message.channel.purge(limit=100)
+    await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
     if vc.is_playing():
         vc.stop()
         await ctx.send(embed = discord.Embed(title= "노래끄기", description = musicnow[0]  + "을(를) 종료했습니다.", color = 0x536349))
@@ -239,6 +366,23 @@ async def 노래끄기(ctx):
 
 @bot.command()
 async def 지금노래(ctx):
+    await ctx.message.channel.purge(limit=1)
+    await ctx.message.channel.purge(limit=100)
+    await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
     if not vc.is_playing():
         await ctx.send("지금 재생중인 노래가 없습니다.")
     else:
@@ -246,6 +390,23 @@ async def 지금노래(ctx):
 
 @bot.command()
 async def 목록추가(ctx, *, msg):
+    await ctx.message.channel.purge(limit=1)
+    await ctx.message.channel.purge(limit=100)
+    await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
     user.append(msg)
     result, URLTEST = title(msg)
     song_queue.append(URLTEST)
@@ -260,6 +421,23 @@ async def 목록추가(ctx, *, msg):
 @bot.command()
 async def 목록삭제(ctx, *, number):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         ex = len(musicnow) - len(user)
         del user[int(number) - 1]
         del musictitle[int(number) - 1]
@@ -284,6 +462,23 @@ async def 목록삭제(ctx, *, number):
 
 @bot.command()
 async def 목록(ctx):
+    await ctx.message.channel.purge(limit=1)
+    await ctx.message.channel.purge(limit=100)
+    await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
     if len(musictitle) == 0:
         await ctx.send("목록이 비어있습니다.")
     else:
@@ -297,6 +492,23 @@ async def 목록(ctx):
 @bot.command()
 async def 목록초기화(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         ex = len(musicnow) - len(user)
         del user[:]
         del musictitle[:]
@@ -312,6 +524,23 @@ async def 목록초기화(ctx):
 
 @bot.command()
 async def 목록재생(ctx):
+    await ctx.message.channel.purge(limit=1)
+    await ctx.message.channel.purge(limit=100)
+    await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
 
     YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
     FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
@@ -334,62 +563,164 @@ async def 목록재생(ctx):
 @bot.command()
 async def 뭐하냐(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         if(random.random() > 0.2):
             await ctx.send("죄송합니다!")
         else:
             await ctx.send("총이 더러워서 물로 씻고 있습니다!")
     except:
-        await ctx.send("Error")
+        await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
 
 @bot.command()
 async def 복무신조(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         if(random.random() > 0.2):
             await ctx.send("우리의 결의!")
         else:
             await ctx.send("죄송합니다! 아직 못 외웠습니다!")
     except:
-        await ctx.send("Error")
+        await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
 
 @bot.command()
 async def 아침뭐냐(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         if(random.random() > 0.2):
             await ctx.send("쇠미에 쏘야입니다!")
         else:
             await ctx.send("잘 모르겠습니다!")
     except:
-        await ctx.send("Error")
+        await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
 
 @bot.command()
 async def 점심뭐냐(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         if(random.random() > 0.2):
             await ctx.send("고순조입니다...")
         else:
             await ctx.send("저 오늘 안먹어서 모릅니다")
     except:
-        await ctx.send("Error")
+        await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
 
 @bot.command()
 async def 남은군생활(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         if(random.random() > 0.2):
             await ctx.send("489일 남았습니다")
         else:
             await ctx.send("그걸 왜 물어보십니까")
     except:
-        await ctx.send("Error")
+        await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
 
 @bot.command()
 async def 툭툭치기(ctx):
     try:
+        await ctx.message.channel.purge(limit=1)
+        await ctx.message.channel.purge(limit=100)
+        await ctx.send(embed = discord.Embed(title='도움말',description="""
+\n!도움말 -> 뮤직봇의 모든 명령어를 볼 수 있습니다.
+\n!청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n!야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
+\n!나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+\n!재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
+\n!노래끄기 -> 현재 재생중인 노래를 끕니다.
+!일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
+!다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
+\n!지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+\n!목록 -> 이어서 재생할 노래목록을 보여줍니다.
+!목록재생 -> 목록에 추가된 노래를 재생합니다.
+!목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
+\n!목록추가 [노래] -> 노래를 대기열에 추가합니다.
+!목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
         if(random.random() > 0.2):
             await ctx.send("이병 슈퍼봇!")
         else:
             await ctx.send("예?")
     except:
-        await ctx.send("Error")
+        await ctx.send(embed = discord.Embed(title= "Error", description = "잘못된 사용입니다.", color = 0x536349))
 
 
 
@@ -400,6 +731,7 @@ async def 툭툭치기(ctx):
 
 # @bot.command()
 # async def 즐겨찾기(ctx):
+#     await ctx.message.channel.purge(limit=1)
 #     global Ftext
 #     Ftext = ""
 #     correct = 0
@@ -430,6 +762,7 @@ async def 툭툭치기(ctx):
 
 # @bot.command()
 # async def 즐겨찾기추가(ctx, *, msg):
+#     await ctx.message.channel.purge(limit=1)
 #     correct = 0
 #     for i in range(len(userF)):
 #         if userF[i] == str(ctx.message.author.name): #userF에 유저정보가 있는지 확인
@@ -463,6 +796,7 @@ async def 툭툭치기(ctx):
 
 # @bot.command()
 # async def 즐겨찾기삭제(ctx, *, number):
+#     await ctx.message.channel.purge(limit=1)
 #     correct = 0
 #     for i in range(len(userF)):
 #         if userF[i] == str(ctx.message.author.name): #userF에 유저정보가 있는지 확인
@@ -522,6 +856,7 @@ bot.run(token)
 # @bot.command()
 # async def 목록셔플(ctx):
 #     try:
+#         await ctx.message.channel.purge(limit=1)
 #         global musicnow, user, musictitle,song_queue
 #         numbershuffle = len(musicnow) - len(user)
 #         for i in range(numbershuffle):
@@ -549,6 +884,7 @@ bot.run(token)
 # @bot.command()
 # async def 음악(ctx):
 #     try:
+#         await ctx.message.channel.purge(limit=1)
 #         await ctx.send("000 병장님 어떤 음악 틀어드리면 되겠습니까?")
 #     except:
 #         try:
@@ -559,6 +895,7 @@ bot.run(token)
 # @bot.command()
 # async def 음악제목(ctx):
 #     try:
+#         await ctx.message.channel.purge(limit=1)
 #         await ctx.send("기가지니~음악제목 틀어줘~")
 #     except:
 #         try:
