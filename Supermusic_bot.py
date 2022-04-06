@@ -9,14 +9,21 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from discord.utils import get
 from discord import FFmpegPCMAudio
-import asyncio
 import time
 import os
 from dotenv import load_dotenv
 import random
 
-bot = commands.Bot(command_prefix='')
-client = discord.Client()
+from importlib.resources import contents
+from discord.ui import Button, View
+import asyncio
+from discord.utils import get
+
+
+
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix='', intents = intents) 
+client = discord.Client(intents = intents)
 
 load_dotenv()
 token = os.getenv("TOKEN")
@@ -90,10 +97,45 @@ def play_next(ctx):
             vc.play(discord.FFmpegPCMAudio(URL,**FFMPEG_OPTIONS), after=lambda e: play_next(ctx))
     else:
         if not vc.is_playing():
-            client.loop.create_task(vc.disconnect())
+            client.create_task(vc.disconnect())
 
 
 async def prt_help(ctx):
+    button1 = Button(label="음성채널 IN", emoji="📢", style = discord.ButtonStyle.primary)
+    button2 = Button(label="음성채널 OUT",  emoji="🏃", style = discord.ButtonStyle.primary)
+    button3 = Button(label="멜론차트", emoji="🎵",style = discord.ButtonStyle.primary)
+    button4 = Button(label="목록", emoji="📋", style = discord.ButtonStyle.primary)
+    button5 = Button(label="목록셔플", emoji="🪢", style = discord.ButtonStyle.primary)
+    button6 = Button(label="채팅창 청소", emoji="🧹", style = discord.ButtonStyle.primary)
+    async def button_callback1(interaction):
+        await 야(ctx)
+    async def button_callback2(interaction):
+        await 나가(ctx)
+    async def button_callback3(interaction):
+        await ctx.message.channel.purge(limit=100)
+        await prt_help(ctx);
+        await 멜론차트___재생(ctx)
+    async def button_callback4(interaction):
+        await 목록(ctx)
+    async def button_callback5(interaction):
+        await 목록셔플(ctx)
+    async def button_callback6(interaction):
+        await ctx.message.channel.purge(limit=100)
+        await prt_help(ctx);
+        await ctx.send(embed = discord.Embed(title= "채팅창 청소", description = "청소 완료!", color = 0x536349))
+    button1.callback = button_callback1
+    button2.callback = button_callback2
+    button3.callback = button_callback3
+    button4.callback = button_callback4
+    button5.callback = button_callback5
+    button6.callback = button_callback6
+    view = View()
+    view.add_item(button1)
+    view.add_item(button2)
+    view.add_item(button3)
+    view.add_item(button4)
+    view.add_item(button5)
+    view.add_item(button6)
     await ctx.send(embed = discord.Embed(title='도움말',description="""
 \n야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
 나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
@@ -108,7 +150,8 @@ async def prt_help(ctx):
 목록추가 [노래] -> 노래를 대기열에 추가합니다.
 목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.
 목록셔플 -> 목록에 추가된 노래들의 순서를 랜덤으로 셔플합니다.
-\n청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.""", color = 0x536349))
+\n청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
+\n\n‼️ 너무 빠른 입력은 동작 오류를 일으킵니다 ‼️""", color = 0x536349), view=view)
 
 
 
@@ -209,16 +252,60 @@ async def 재생(ctx, *, msg):
         with YoutubeDL(YDL_OPTIONS) as ydl:
             info = ydl.extract_info(url, download=False)
         URL = info['formats'][0]['url']
-        await ctx.message.channel.purge(limit=100)
-        await prt_help(ctx);
         await ctx.send(embed = discord.Embed(title= "노래 재생", description = "현재 " + musicnow[0] + "을(를) 재생하고 있습니다.", color = 0x536349))
         vc.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx))
     else:
         user.append(msg)
         result, URLTEST = title(msg)
         song_queue.append(URLTEST)
-        await ctx.message.channel.purge(limit=100)
-        await prt_help(ctx);
+        await ctx.send(embed = discord.Embed(title = "재생목록 추가", description = result + "를 재생목록에 추가했어요!", color = 0x536349))
+        global Text
+        Text = ""
+        for i in range(len(musictitle)):
+            Text = Text + "\n" + str(i + 1) + ". " + str(musictitle[i])
+        await ctx.send(embed = discord.Embed(title= "목록", description = Text.strip(), color = 0x536349))
+
+
+
+
+@bot.command()
+async def 멜론차트___재생(ctx):
+    try:
+        global vc
+        vc = await ctx.message.author.voice.channel.connect()
+        await ctx.send(embed = discord.Embed(title= "호출", description = "이병 슈퍼봇! 부르셨습니까!", color = 0x536349))
+    except:
+        try:
+            await vc.mode_to(ctx.message.author.voice.channel)
+        except:
+            print('문제없음')
+    if not vc.is_playing():
+        options = webdriver.ChromeOptions()
+        options.add_argument("headless")
+        global entireText
+        YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
+        FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+        chromedriver_dir = link
+        driver = webdriver.Chrome(chromedriver_dir, options= options)
+        driver.get("https://www.youtube.com/results?search_query="+"최신 멜론 차트 순위")
+        source = driver.page_source
+        bs = bs4.BeautifulSoup(source, 'lxml')
+        entire = bs.find_all('a', {'id': 'video-title'})
+        entireNum = entire[0]
+        entireText = entireNum.text.strip()
+        musicurl = entireNum.get('href')
+        url = 'https://www.youtube.com'+musicurl 
+        driver.quit()
+        musicnow.insert(0,entireText)
+        with YoutubeDL(YDL_OPTIONS) as ydl:
+            info = ydl.extract_info(url, download=False)
+        URL = info['formats'][0]['url']
+        await ctx.send(embed = discord.Embed(title= "노래 재생", description = "현재 " + musicnow[0] + "을(를) 재생하고 있습니다.", color = 0x536349))
+        vc.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS), after=lambda e: play_next(ctx))
+    else:
+        user.append("최신 멜론 차트 순위")
+        result, URLTEST = title("최신 멜론 차트 순위")
+        song_queue.append(URLTEST)
         await ctx.send(embed = discord.Embed(title = "재생목록 추가", description = result + "를 재생목록에 추가했어요!", color = 0x536349))
         global Text
         Text = ""
@@ -403,6 +490,8 @@ async def 목록셔플(ctx):
         await ctx.send(embed = discord.Embed(title= "목록", description = Text.strip(), color = 0x536349))
     except:
         await ctx.send(embed = discord.Embed(title = "오류", description = "목록이 비어있습니다.", color = 0x536349))
+
+
 
 
 #장난감=============================================================================================
