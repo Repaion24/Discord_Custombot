@@ -2,6 +2,7 @@ from unittest import result
 import discord
 from discord.ext import commands
 from pandas import options
+from sklearn.utils import shuffle
 from youtube_dl import YoutubeDL
 import bs4
 from selenium import webdriver
@@ -28,6 +29,7 @@ musicnow = []   #현재 출력중인 노래
 userF = []      #유저 정보 저장 배열
 userFlist = []  #유저 개인 노래 저장 배열
 allplaylist = []    #플레이리스트 배열
+shuffles = []   #셔플용 배열
 
 
 
@@ -93,19 +95,20 @@ def play_next(ctx):
 
 async def prt_help(ctx):
     await ctx.send(embed = discord.Embed(title='도움말',description="""
-\n청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.
 \n야 -> 뮤직봇을 자신이 속한 음성 채널로 부릅니다.
-\n나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
+나가 -> 뮤직봇을 자신이 속한 음성 채널에서 내보냅니다.
 \n재생 [노래이름] -> 뮤직봇이 노래를 검색해 틀어줍니다. 만약 노래가 이미 재생중이라면, 대기열에 추가합니다
-\n노래끄기 -> 현재 재생중인 노래를 끕니다.
+노래끄기 -> 현재 재생중인 노래를 끕니다.
 일시정지 -> 현재 재생중인 노래를 일시정지시킵니다.
 다시재생 -> 일시정지시킨 노래를 다시 재생합니다.
-\n지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
+지금노래 -> 지금 재생되고 있는 노래의 제목을 알려줍니다.
 \n목록 -> 이어서 재생할 노래목록을 보여줍니다.
 목록재생 -> 목록에 추가된 노래를 재생합니다.
 목록초기화 -> 목록에 추가된 모든 노래를 지웁니다.
-\n목록추가 [노래] -> 노래를 대기열에 추가합니다.
-목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.""", color = 0x536349))
+목록추가 [노래] -> 노래를 대기열에 추가합니다.
+목록삭제 [숫자] -> 대기열에서 입력한 숫자에 해당하는 노래를 지웁니다.
+목록셔플 -> 목록에 추가된 노래들의 순서를 랜덤으로 셔플합니다.
+\n청소 [숫자] -> 뮤직봇 명령어 채널에서 [숫자] 만큼 메세지를 삭제합니다.""", color = 0x536349))
 
 
 
@@ -234,7 +237,7 @@ async def 일시정지(ctx):
         vc.pause()
         await ctx.send(embed = discord.Embed(title= "일시정지", description = musicnow[0] + "을(를) 일시정지 했습니다.", color = 0x536349))
     else:
-        await ctx.send("지금 재생중인 노래가 없습니다.")
+        await ctx.send(embed = discord.Embed(title = "오류", description = "재생중인 노래가 없습니다.", color = 0x536349))
 
 
 
@@ -245,7 +248,7 @@ async def 다시재생(ctx):
     try:
         vc.resume()
     except:
-         await ctx.send("지금 재생중인 노래가 없습니다.")
+         await ctx.send(embed = discord.Embed(title = "오류", description = "재생중인 노래가 없습니다.", color = 0x536349))
     else:
          await ctx.send(embed = discord.Embed(title= "다시재생", description = musicnow[0]  + "을(를) 다시 재생했습니다.", color = 0x536349))
 
@@ -259,7 +262,7 @@ async def 노래끄기(ctx):
         vc.stop()
         await ctx.send(embed = discord.Embed(title= "노래끄기", description = musicnow[0]  + "을(를) 종료했습니다.", color = 0x536349))
     else:
-        await ctx.send("지금 재생중인 노래가 없습니다.")
+        await ctx.send(embed = discord.Embed(title = "오류", description = "재생중인 노래가 없습니다.", color = 0x536349))
 
 
 
@@ -268,9 +271,9 @@ async def 지금노래(ctx):
     await ctx.message.channel.purge(limit=100)
     await prt_help(ctx);
     if not vc.is_playing():
-        await ctx.send("지금 재생중인 노래가 없습니다.")
+        await ctx.send(embed = discord.Embed(title = "오류", description = "재생중인 노래가 없습니다.", color = 0x536349))
     else:
-        await ctx.send(embed = discord.Embed(title = "재생중", description = "현재 " + musicnow[0] + "을(를) 재생하고 있습니다.", color = 0x536349))
+        await ctx.send(embed = discord.Embed(title = "지금노래", description = "현재 " + musicnow[0] + "을(를) 재생하고 있습니다.", color = 0x536349))
 
 
 
@@ -286,8 +289,9 @@ async def 목록추가(ctx, *, msg):
     Text = ""
     for i in range(len(musictitle)):
         Text = Text + "\n" + str(i + 1) + ". " + str(musictitle[i])
-            
     await ctx.send(embed = discord.Embed(title= "목록", description = Text.strip(), color = 0x536349))
+
+
 
 @bot.command()
 async def 목록삭제(ctx, *, number):
@@ -299,7 +303,7 @@ async def 목록삭제(ctx, *, number):
         del musictitle[int(number) - 1]
         del song_queue[int(number)-1]
         del musicnow[int(number)-1+ex]
-        await ctx.send("대기열이 정상적으로 삭제되었습니다.")
+        await ctx.send(embed = discord.Embed(title = "목록삭제", description = "목록을 정상적으로 삭제했습니다.", color = 0x536349))
         global Text
         Text = ""
         for i in range(len(musictitle)):
@@ -307,12 +311,12 @@ async def 목록삭제(ctx, *, number):
         await ctx.send(embed = discord.Embed(title= "목록", description = Text.strip(), color = 0x536349))
     except:
         if len(list) == 0:
-            await ctx.send("대기열에 노래가 없습니다.")
+            await ctx.send(embed = discord.Embed(title = "오류", description = "목록이 비어있습니다", color = 0x536349))
         else:
             if len(list) < int(number):
-                await ctx.send("숫자가 이상합니다.")
+                await ctx.send(embed = discord.Embed(title = "오류", description = "수의 범위가 이상합니다", color = 0x536349))
             else:
-                await ctx.send("숫자를 입력해주세요.")
+                await ctx.send(embed = discord.Embed(title = "오류", description = "숫자를 입력해주세요.", color = 0x536349))
 
 
 
@@ -321,7 +325,7 @@ async def 목록(ctx):
     await ctx.message.channel.purge(limit=100)
     await prt_help(ctx);
     if len(musictitle) == 0:
-        await ctx.send("목록이 비어있습니다.")
+        await ctx.send(embed = discord.Embed(title = "목록", description = "목록이 비어있습니다", color = 0x536349))
     else:
         global Text
         Text = ""
@@ -347,7 +351,7 @@ async def 목록초기화(ctx):
                 break
         await ctx.send(embed = discord.Embed(title= "목록초기화", description = """목록이 정상적으로 초기화되었습니다.""", color = 0x536349))
     except:
-        await ctx.send("목록이 비어있습니다.")
+        await ctx.send(embed = discord.Embed(title = "오류", description = "목록이 비어있습니다.", color = 0x536349))
 
 
 
@@ -359,7 +363,7 @@ async def 목록재생(ctx):
     YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
     FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
     if len(user) == 0:
-        await ctx.send("목록이 비어있습니다.")
+        await ctx.send(embed = discord.Embed(title = "오류", description = "목록이 비어있습니다.", color = 0x536349))
     else:
         if len(musicnow) - len(user) >= 1:
             for i in range(len(musicnow) - len(user)):
@@ -367,7 +371,38 @@ async def 목록재생(ctx):
         if not vc.is_playing():
             play(ctx)
         else:
-            await ctx.send("노래가 이미 재생중입니다.")
+            await ctx.send(embed = discord.Embed(title = "오류", description = "노래가 이미 재생중입니다.", color = 0x536349))
+
+
+
+@bot.command()
+async def 목록셔플(ctx):
+    try:
+        await ctx.message.channel.purge(limit=100)
+        await prt_help(ctx);
+        global musicnow, user, musictitle, song_queue
+        numbershuffle = len(musicnow) - len(user)
+        for i in range(numbershuffle):
+            shuffles.append(musicnow[0])
+            del musicnow[0]
+        combine = list(zip(user, musicnow, musictitle, song_queue))
+        random.shuffle(combine)
+        a, b, c, d = list(zip(*combine))
+        user = list(a)
+        musicnow = list(b)
+        musictitle = list(c)
+        song_queue = list(d)
+        for i in range(numbershuffle):
+            musicnow.insert(0, shuffles[i])
+        del shuffles[:]
+        await ctx.send(embed = discord.Embed(title = "목록셔플", description = "목록이 정상적으로 셔플되었습니다.", color = 0x536349))
+        global Text
+        Text = ""
+        for i in range(len(musictitle)):
+            Text = Text + "\n" + str(i + 1) + ". " + str(musictitle[i])
+        await ctx.send(embed = discord.Embed(title= "목록", description = Text.strip(), color = 0x536349))
+    except:
+        await ctx.send(embed = discord.Embed(title = "오류", description = "목록이 비어있습니다.", color = 0x536349))
 
 
 #장난감=============================================================================================
@@ -580,33 +615,6 @@ bot.run(token)
 
 
 ##개발중인코드=================================================================
-
-
-# @bot.command()
-# async def 목록셔플(ctx):
-#     try:
-#         
-#         global musicnow, user, musictitle,song_queue
-#         numbershuffle = len(musicnow) - len(user)
-#         for i in range(numbershuffle):
-#             shuffles.append(musicnow[0])
-#             del musicnow[0]
-#         combine = list(zip(user, musicnow, musictitle, song_queue))
-#         random.shuffle(combine)
-#         a, b, c, d = list(zip(*combine))
-
-#         user = list(a)
-#         musicnow = list(b)
-#         musictitle = list(c)
-#         song_queue = list(d)
-
-#         for i in range(numbershuffle):
-#             musicnow.insert(0, shuffles[i])
-
-#         del shuffles[:]
-#         await ctx.send("목록이 정상적으로 셔플되었습니다.")
-#     except:
-#         await ctx.send("셔플할 목록이 없습니다!")
 
 
 
